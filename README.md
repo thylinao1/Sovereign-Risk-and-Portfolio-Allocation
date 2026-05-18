@@ -72,6 +72,23 @@ On Apple Silicon, swap `tensorflow` for `tensorflow-macos` and `tensorflow-metal
 
 ## Reproduce
 
+If you cannot run the full notebook (TensorFlow + PPO training is heavy on
+small machines), use the standalone script for the classical baselines only:
+
+```bash
+export FRED_API_KEY=<your_key>
+pip install -r requirements-test.txt xgboost
+python scripts/refresh_baseline_numbers.py
+```
+
+This skips the Two-Tower NN and PPO entirely. It runs the corrected,
+leakage-fixed, CV-tuned pipeline for LR / RF / sklearn GB / XGBoost in under
+five minutes and prints a table of AUC / AP / Brier / ECE with bootstrap 95%
+CIs. Paste the resulting table into the README Prediction Performance section.
+
+For the full pipeline (including TF-based Two-Tower and PPO):
+
+
 1. Get a free FRED API key at https://fred.stlouisfed.org/docs/api/api_key.html.
 2. `export FRED_API_KEY=<your_key>`.
 3. `jupyter notebook notebooks/01_sovereign_default_modeling.ipynb` and Cell -> Run All,

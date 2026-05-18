@@ -57,3 +57,9 @@ data/interim/
 # Secrets
 .env
 *.key
+
+# Notebook runtime artefacts (model weights, plots, CSV exports)
+notebooks/*.h5
+notebooks/*.weights.h5
+notebooks/*.png
+notebooks/*.csv
