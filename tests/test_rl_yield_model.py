@@ -2,7 +2,7 @@
 import pytest
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from src.rl_yield_model import compute_spread, compute_recovery, transaction_cost
+from src.rl.yield_model import compute_spread, compute_recovery, transaction_cost
 
 
 def test_spread_increases_with_debt():

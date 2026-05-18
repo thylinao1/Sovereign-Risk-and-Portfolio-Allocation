@@ -2,7 +2,7 @@
 import numpy as np
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from src.rl_state_normaliser import StateNormaliser
+from src.rl.normaliser import StateNormaliser
 
 
 def test_mean_var_converge_to_population_values():
