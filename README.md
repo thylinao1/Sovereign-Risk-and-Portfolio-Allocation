@@ -74,25 +74,21 @@ Default definition includes: missed payments, debt restructuring with haircuts, 
 ### Prediction Models
 
 **1. Logistic Regression (Baseline)**
-- L2 regularization with C=0.1
+- L2 regularization; C selected by TimeSeriesSplit CV on training years
 - Balanced class weights
-- AUC: 0.636, Average Precision: 0.041
+- AUC, AP, Brier and bootstrap 95% CIs reported in the notebook after re-execution
 
 **2. Random Forest**
-- 100 trees, max depth 5
+- n_estimators and max_depth selected by TimeSeriesSplit CV on training years
 - Balanced class weights
-- AUC: 0.828, Average Precision: 0.085
-- **Best performer for discrimination**
+- Per-metric ranking (AUC, AP, Brier, ECE) reported with bootstrap 95% CIs in the notebook
 
 **3. Gradient Boosting (sklearn)**
-- 100 estimators, learning rate 0.1
-- Max depth 3
-- AUC: 0.793, Average Precision: 0.065
+- n_estimators, max_depth, learning_rate selected by TimeSeriesSplit CV on training years
 
 **4. XGBoost**
-- 100 trees, max depth 3, learning rate 0.1
+- n_estimators, max_depth, learning_rate selected by TimeSeriesSplit CV on training years
 - scale_pos_weight set to neg/pos ratio in train
-- Numbers will be filled in when the notebook is re-executed in Phase 6.
 
 **5. Two-Tower Neural Network**
 - Architecture inspired by recommender systems (MovieLens coursework)
@@ -165,6 +161,13 @@ cost = 0.003 × turnover  # 30bps round-trip
 ## Results
 
 ### Prediction Performance (Test Set: 2015-2023)
+
+The notebook now reports each headline metric with a bootstrap 95% CI
+(2,000 resamples, percentile method) and an expected calibration error
+alongside AUC / AP / Brier. With 18 positive cases in the test set, CIs on
+AUC are wide; rankings inside the overlap should be treated as inconclusive.
+Numbers below are from the pre-tuning, pre-CI run and will be replaced when
+the notebook is re-executed leakage-free in Phase 6.
 
 | Model | AUC-ROC | Avg Precision | Brier Score |
 |-------|---------|---------------|-------------|
