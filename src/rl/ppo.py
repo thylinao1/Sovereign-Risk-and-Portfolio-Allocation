@@ -59,14 +59,26 @@ class PPOAgent:
         return keras.Model(inputs, value)
 
     def _log_prob_gaussian(self, actions, mean, log_std):
-        std = tf.exp(tf.clip_by_value(log_std, -5, 2))
-        var =std ** 2
-        log_prob = -0.5 *(((actions - mean) ** 2)/var + 2 * log_std + np.log(2 * np.pi))
+        # Clip once and reuse: the normalising constant '2 * log_std' must
+        # match the variance used in the Mahalanobis term. The previous
+        # implementation clipped log_std only for std and used the raw value
+        # in the constant, producing mathematically inconsistent log-probs
+        # whenever the actor's log_std head drifted outside [-5, 2].
+        log_std_c = tf.clip_by_value(log_std, -5.0, 2.0)
+        std = tf.exp(log_std_c)
+        var = std ** 2
+        log_prob = -0.5 * (
+            ((actions - mean) ** 2) / var
+            + 2.0 * log_std_c
+            + np.log(2.0 * np.pi)
+        )
         return tf.reduce_sum(log_prob, axis=-1)
 
     def _entropy_gaussian(self, log_std):
-        std = tf.exp(tf.clip_by_value(log_std, -5, 2))
-        entropy = 0.5*(1 + np.log(2 * np.pi) + 2*log_std)
+        # Same clip-once-reuse pattern as _log_prob_gaussian. Entropy of a
+        # diagonal Gaussian per dim is 0.5 * (1 + log(2 pi) + 2 * log sigma).
+        log_std_c = tf.clip_by_value(log_std, -5.0, 2.0)
+        entropy = 0.5 * (1.0 + np.log(2.0 * np.pi) + 2.0 * log_std_c)
         return tf.reduce_mean(tf.reduce_sum(entropy, axis=-1))
 
     def get_action(self, state, training=True):
