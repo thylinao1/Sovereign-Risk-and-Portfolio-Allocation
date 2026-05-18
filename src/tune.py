@@ -1,6 +1,6 @@
 """Time-series hyperparameter search.
 
-The original notebook compared LR / RF / sklearn GB / Two-Tower NN using
+An earlier configuration compared LR / RF / sklearn GB / Two-Tower NN using
 constructor-default hyperparameters and ranked them by test-set AUC. With
 only 18 positive cases in the test set, this comparison is uninformative.
 
