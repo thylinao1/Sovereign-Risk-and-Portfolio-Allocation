@@ -124,3 +124,68 @@ def test_default_parameters_match_documented_defaults():
     assert env.recovery_floor == 0.35
     assert env.recovery_slope == 0.15
     assert env.transaction_cost_per_turnover == 0.003
+
+
+def test_env_inline_math_matches_yield_model_helpers():
+    """Regression guard: env's inline yield / recovery / cost math must equal
+    the standalone helpers in src.rl.yield_model. Drift between the two has
+    bitten this repo before (Phase 4 audit caught gdp_pc clamping divergence
+    on the recovery branch)."""
+    from src.rl.yield_model import compute_spread, compute_recovery, transaction_cost
+
+    df = _make_panel()
+    env = SovereignBondEnv(df, DOMESTIC_FEATURES, GLOBAL_FEATURES)
+    env.reset()
+
+    # --- spreads ---
+    debt_idx = env.domestic_features.index("external_debt_pct_gni")
+    reserves_idx = env.domestic_features.index("reserves_months_imports")
+    _, env_spreads = env._compute_yields(0)
+    for i in range(env.n_countries):
+        debt = env.macro_data[0, i, debt_idx]
+        reserves = env.macro_data[0, i, reserves_idx]
+        expected = compute_spread(
+            debt, reserves,
+            spread_intercept=env.spread_intercept,
+            spread_per_debt=env.spread_per_debt,
+            spread_per_reserves=env.spread_per_reserves,
+            spread_floor=env.spread_floor,
+            spread_ceiling=env.spread_ceiling,
+        )
+        assert abs(env_spreads[i] - expected) < 1e-6, (
+            f"country {i}: env spread {env_spreads[i]} vs helper {expected}"
+        )
+
+    # --- recovery: force a default in year 0 so the branch runs ---
+    env.defaults[0, 0] = 1
+    gdp_idx = env.domestic_features.index("gdp_per_capita_constant")
+    env_recovery = env._get_recovery_rates(0)
+    expected_recovery = compute_recovery(
+        env.macro_data[0, 0, gdp_idx],
+        recovery_floor=env.recovery_floor,
+        recovery_slope=env.recovery_slope,
+        recovery_gdp_norm=env.recovery_gdp_norm,
+    )
+    assert abs(env_recovery[0] - expected_recovery) < 1e-6
+
+    # --- recovery on a synthetic negative-GDP row should also match (this
+    # specifically guards the Phase 4 clamping fix) ---
+    env.macro_data[0, 1, gdp_idx] = -5000.0
+    env.defaults[0, 1] = 1
+    env_recovery = env._get_recovery_rates(0)
+    expected_recovery = compute_recovery(
+        -5000.0,
+        recovery_floor=env.recovery_floor,
+        recovery_slope=env.recovery_slope,
+        recovery_gdp_norm=env.recovery_gdp_norm,
+    )
+    assert abs(env_recovery[1] - expected_recovery) < 1e-6
+
+    # --- transaction cost via step() ---
+    pre_weights = env.portfolio.copy()
+    env.step(np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32))
+    new_weights = env.portfolio
+    turnover = np.abs(new_weights - pre_weights).sum()
+    expected_cost = transaction_cost(turnover, per_unit=env.transaction_cost_per_turnover)
+    inline_cost = env.transaction_cost_per_turnover * turnover
+    assert abs(inline_cost - expected_cost) < 1e-6

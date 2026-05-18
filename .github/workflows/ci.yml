@@ -64,6 +64,9 @@ jobs:
         run: |
           set -e
           # Em-dash, en-dash, curly quotes, ellipsis - banned in tracked text files.
+          # The Unicode codepoint class below relies on PCRE2-compiled git
+          # (the default on ubuntu-latest). If this workflow is ever run on
+          # an older runner image, replace the class with literal characters.
           # Skip the LICENSE (third-party MIT text) and binary files.
           BAD=$(git grep -l -P '[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]' -- ':!LICENSE' ':!paper/' || true)
           if [ -n "$BAD" ]; then
