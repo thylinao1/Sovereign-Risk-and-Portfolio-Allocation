@@ -20,14 +20,19 @@ The analysis covers 117 countries from 1990-2023, with temporal train/test split
 - Class imbalance (2.4% default rate) requires careful handling with focal loss and class weights
 
 ### Reinforcement Learning Results
-- **PPO agent achieves 13-20% improvement** over equal-weight baseline
-- Consistent outperformance across deterministic, stochastic, and contagion scenarios
-- Correlation between default rate and portfolio weight: -0.585
-- However, learned policy is mostly static (doesn't respond dynamically to feature perturbations)
-- Agent learns historical risk patterns rather than economic reasoning about individual variables
-
-P.S. Some small inconsistencies in numbers and comments are caused by runing the projects several times which had it impact.
-
+- PPO agent learns a fixed allocation policy from macro fundamentals.
+  Equal-weight baseline 16.67; RL policy single-run reward 18.78 (+12.6% vs equal-weight).
+- Across environments: deterministic single-run +12.6% (range 9-20% across seeds),
+  stochastic +9%, contagion +5%. The "+13-20%" range previously headlined was the
+  best deterministic environment only and included seed-to-seed variation.
+- Beats a low-volatility heuristic (+5.9%) and a low-debt heuristic (-26.7%).
+- Correlation between default rate and portfolio weight: -0.585.
+- The learned policy is effectively static. A 10% perturbation of every macro
+  feature moves portfolio weights by 0.0000 (sensitivity test, notebook
+  "State-level sensitivity check" section). Both static-trained and
+  stochastic-trained agents have zero weight variance across years. The gain
+  over equal-weight comes from learning to underweight serial defaulters by
+  about 1.4 percentage points, not from temporal risk management.
 ## Technical Implementation
 
 ### Data Collection
@@ -79,12 +84,17 @@ Default definition includes: missed payments, debt restructuring with haircuts, 
 - AUC: 0.828, Average Precision: 0.085
 - **Best performer for discrimination**
 
-**3. Gradient Boosting**
+**3. Gradient Boosting (sklearn)**
 - 100 estimators, learning rate 0.1
 - Max depth 3
 - AUC: 0.793, Average Precision: 0.065
 
-**4. Two-Tower Neural Network**
+**4. XGBoost**
+- 100 trees, max depth 3, learning rate 0.1
+- scale_pos_weight set to neg/pos ratio in train
+- Numbers will be filled in when the notebook is re-executed in Phase 6.
+
+**5. Two-Tower Neural Network**
 - Architecture inspired by recommender systems (MovieLens coursework)
 - Separate embedding towers for domestic and global features
 - L2-normalized embeddings with dot product interaction
@@ -159,17 +169,28 @@ cost = 0.003 × turnover  # 30bps round-trip
 | Model | AUC-ROC | Avg Precision | Brier Score |
 |-------|---------|---------------|-------------|
 | Logistic Regression | 0.636 | 0.041 | 0.0821 |
-| Gradient Boosting | 0.793 | 0.065 | 0.0221 |
-| Random Forest | **0.828** | **0.085** | 0.0569 |
+| Gradient Boosting (sklearn) | 0.793 | 0.065 | 0.0221 |
+| XGBoost | pending re-run | pending | pending |
+| Random Forest | 0.828 | 0.085 | 0.0569 |
 | Two-Tower NN | 0.675 | 0.064 | 0.0269 |
+
+Notes on this table: the four pre-XGBoost numbers above are from the original
+run with leakage in the imputation step. They will be replaced when the
+notebook is re-executed with the leakage fix and the new XGBoost baseline.
+With only 18 positive cases in the test set, a bootstrap CI on AUC is large;
+do not treat the ranking as significant without one (added in Phase 5).
 
 ### RL Performance (Cumulative Returns)
 
-| Environment | Equal Weight | RL Policy | Improvement |
-|-------------|--------------|-----------|-------------|
-| Deterministic | 16.67 | 18.78 - 20.02 | **+13-20%** |
-| Stochastic | 23.50 | 25.54 | +9% |
-| Contagion | 20.78 | 21.83 | +5% |
+| Environment | Equal Weight | RL Policy | Improvement | Notes |
+|-------------|--------------|-----------|-------------|-------|
+| Deterministic (single run) | 16.67 | 18.78 | +12.6% | |
+| Deterministic (range across seeds) | 16.67 | 18.78 - 20.02 | +12.6% to +20.1% | "ran several times, different results" |
+| Stochastic | 23.50 | 25.54 | +9% | |
+| Contagion | 20.78 | 21.83 | +5% | |
+
+The +12.6 to +20.1% range on the deterministic environment is run-to-run
+variation, not a confidence interval. A proper bootstrap CI is added in Phase 5.
 
 ### Strategy Comparison
 
@@ -226,6 +247,11 @@ The agent learned to underweight serial defaulters (Venezuela, Argentina, Ukrain
 - **Missing data**: Some countries have 70%+ missing values, median imputation introduces bias
 - **Temporal clustering**: Many 1990 defaults are carryover from 1980s debt crisis, not true predictions
 - **Survivorship bias**: Only includes countries that existed throughout the period
+- **Default label distribution**: 56 of the 88 default events (64%) are stamped
+  in the 1990s, many of them carryover from the 1980s debt crisis or formal
+  acknowledgements of pre-existing default status by newly-independent former
+  Soviet states. These are not genuine 1990-era forecasts. The cleaner subset
+  is the 32 post-2000 default events (see notebook cell 6 output).
 
 ### Methodological Limitations
 - **No yield curve data**: Real sovereign analysis requires term structure
