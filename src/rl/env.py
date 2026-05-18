@@ -125,7 +125,11 @@ class SovereignBondEnv:
         gdp_pc_idx = self.domestic_features.index('gdp_per_capita_constant')
         for i in range(self.n_countries):
             if self.defaults[year_idx, i] == 1:
-                gdp_pc = self.macro_data[year_idx, i, gdp_pc_idx]
+                # Clamp negative imputed/scaled GDP to zero so this matches
+                # compute_recovery() in src/rl/yield_model.py, which does the
+                # same. Without the clamp the env produced recovery rates
+                # below recovery_floor for any negative GDP row.
+                gdp_pc = max(0.0, float(self.macro_data[year_idx, i, gdp_pc_idx]))
                 recovery[i] = (self.recovery_floor
                                + self.recovery_slope * min(1.0, gdp_pc / self.recovery_gdp_norm))
         return recovery
