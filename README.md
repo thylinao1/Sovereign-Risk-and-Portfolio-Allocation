@@ -253,6 +253,24 @@ cost = 0.003 × turnover  # 30bps round-trip
 
 ## Results
 
+### Note on the numbers below
+
+The tables that follow report the headline figures from an earlier end-to-end
+execution of the notebook. The methodology fixes in this revision (train-only
+imputation, hyperparameter selection via TimeSeriesSplit cross-validation,
+bootstrap 95% confidence intervals, calibration diagnostics, env / yield-model
+consistency, PPO log-density clipping) are implemented in `src/` and the
+notebook, exercised by 47 unit tests, and gated by CI. They have not been
+re-executed end-to-end on this commit because the full pipeline (TensorFlow
+Two-Tower NN + three PPO trainings of 300 episodes each on a 1,878-dimensional
+state) exceeds the memory budget of the author's machine. The corrected
+pipeline is the source of truth; a re-execution on a larger machine is the
+open work item.
+
+A standalone Python script `scripts/refresh_baseline_numbers.py` is provided
+for re-running just the classical-baseline rows (LR / RF / sklearn GB /
+XGBoost) on a memory-constrained machine; see the Reproduce section.
+
 ### Prediction Performance (Test Set: 2015-2023)
 
 The notebook now reports each headline metric with a bootstrap 95% CI
