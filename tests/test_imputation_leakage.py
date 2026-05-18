@@ -1,6 +1,6 @@
-"""Regression test for imputer leakage that was present in the original notebook.
+"""Regression test for imputer leakage that existed in an earlier version of the pipeline.
 
-The original cell 16 called `imputer.fit_transform(full_data[feature_cols])`
+The previous implementation called `imputer.fit_transform(full_data[feature_cols])`
 before the temporal train/test split in cell 19, which meant the median used
 to fill 1990-2014 rows depended on 2015-2023 observations (and vice versa).
 
