@@ -11,6 +11,82 @@ This project builds an end-to-end pipeline for sovereign credit risk analysis:
 
 The analysis covers 117 countries from 1990-2023, with temporal train/test splits to prevent data leakage.
 
+## Repository layout
+
+```
+.
+├── README.md
+├── LICENSE
+├── pyproject.toml
+├── requirements.txt          # Notebook runtime stack
+├── requirements-test.txt     # Lightweight test stack
+├── .gitignore
+├── .github/workflows/ci.yml  # pytest + notebook parse + banned-phrasing scan
+├── data/
+│   └── README.md             # Indicator catalogue, FRED_API_KEY setup
+├── paper/
+│   └── limitations-of-deep-learning-for-sovereign-default-prediction.pdf
+├── notebooks/
+│   └── 01_sovereign_default_modeling.ipynb
+├── src/
+│   ├── __init__.py
+│   ├── eval.py               # Bootstrap CIs, ECE, reliability curves
+│   ├── tune.py               # TimeSeriesSplit grid search
+│   ├── data.py               # World Bank + FRED fetchers
+│   └── rl/
+│       ├── __init__.py
+│       ├── env.py            # SovereignBondEnv
+│       ├── ppo.py            # PPOAgent, PPOAgentNorm
+│       ├── normaliser.py     # Welford-running StateNormaliser
+│       └── yield_model.py    # spread / recovery / cost helpers
+└── tests/
+    ├── test_imputation_leakage.py
+    ├── test_eval_helpers.py
+    ├── test_tune.py
+    ├── test_rl_yield_model.py
+    ├── test_state_normaliser.py
+    ├── test_rl_env.py
+    └── test_data.py
+```
+
+## Installation
+
+The notebook needs TensorFlow and XGBoost; the test suite does not. Install
+the lightweight stack first:
+
+```bash
+git clone https://github.com/thylinao1/Sovereign-Risk-and-Portfolio-Allocation.git
+cd Sovereign-Risk-and-Portfolio-Allocation
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-test.txt
+pytest tests/        # should print 46 passed
+```
+
+For running the notebook itself, install the full stack:
+
+```bash
+pip install -r requirements.txt
+```
+
+On Apple Silicon, swap `tensorflow` for `tensorflow-macos` and `tensorflow-metal`.
+
+## Reproduce
+
+1. Get a free FRED API key at https://fred.stlouisfed.org/docs/api/api_key.html.
+2. `export FRED_API_KEY=<your_key>`.
+3. `jupyter notebook notebooks/01_sovereign_default_modeling.ipynb` and Cell -> Run All,
+   or non-interactively:
+
+   ```bash
+   jupyter nbconvert --to notebook --execute --inplace \
+       notebooks/01_sovereign_default_modeling.ipynb
+   ```
+
+4. World Bank data is fetched without authentication; FRED needs the env var
+   from step 2. See `data/README.md` for the indicator catalogue and source
+   citations.
+
+
 ## Key Findings
 
 ### Prediction Performance
