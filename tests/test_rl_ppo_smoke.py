@@ -1,5 +1,5 @@
 """Smoke tests for PPOAgent. Requires TensorFlow, so they are skipped in CI
-unless TF is on the runner. Phase 6 (end-to-end notebook execution) is the
+unless TF is on the runner. End-to-end notebook execution is the
 load-bearing verification for the PPO code; this file exists so the coverage
 gap on src/rl/ppo.py is explicit rather than silent.
 """
@@ -30,9 +30,9 @@ def test_ppo_agent_norm_uses_smaller_actor():
 
 
 def test_log_prob_uses_clipped_log_std_consistently():
-    """Regression guard for the Phase 4 audit finding: log_std must be clipped
-    once and reused for both the variance term and the normalising constant
-    so the log-probability is internally consistent."""
+    """Regression guard for the log_std-clipping consistency: clip once and
+    reuse for both the variance term and the normalising constant so the
+    log-probability is internally consistent."""
     agent = PPOAgent(state_dim=4, action_dim=2)
     # extreme log_std way outside [-5, 2]
     actions = tf.constant([[0.5, -0.5]])

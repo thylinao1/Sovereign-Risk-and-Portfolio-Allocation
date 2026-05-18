@@ -278,7 +278,7 @@ The notebook now reports each headline metric with a bootstrap 95% CI
 alongside AUC / AP / Brier. With 18 positive cases in the test set, CIs on
 AUC are wide; rankings inside the overlap should be treated as inconclusive.
 Numbers below are from the pre-tuning, pre-CI run and will be replaced when
-the notebook is re-executed leakage-free in Phase 6.
+the notebook is re-executed leakage-free on a larger machine.
 
 | Model | AUC-ROC | Avg Precision | Brier Score |
 |-------|---------|---------------|-------------|
@@ -292,7 +292,7 @@ Notes on this table: the four pre-XGBoost numbers above are from the original
 run with leakage in the imputation step. They will be replaced when the
 notebook is re-executed with the leakage fix and the new XGBoost baseline.
 With only 18 positive cases in the test set, a bootstrap CI on AUC is large;
-do not treat the ranking as significant without one (added in Phase 5).
+do not treat the ranking as significant without one.
 
 ### RL Performance (Cumulative Returns)
 
@@ -304,7 +304,7 @@ do not treat the ranking as significant without one (added in Phase 5).
 | Contagion | 20.78 | 21.83 | +5% | |
 
 The +12.6 to +20.1% range on the deterministic environment is run-to-run
-variation, not a confidence interval. A proper bootstrap CI is added in Phase 5.
+variation, not a confidence interval. A bootstrap CI on the cumulative-return distribution would tighten this.
 
 ### Strategy Comparison
 

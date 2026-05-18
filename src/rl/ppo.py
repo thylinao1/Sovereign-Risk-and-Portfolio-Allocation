@@ -3,8 +3,8 @@ allocation environment.
 
 Tensorflow / Keras is required to import this module. Tests for the
 normaliser and the yield-model live alongside; tests for these PPO classes
-are out of scope for the CI matrix and run in Phase 6 when the notebook is
-executed end-to-end.
+are out of scope for the CI matrix and run when the notebook is executed
+end-to-end on a machine with the full TF + xgboost stack.
 """
 from __future__ import annotations
 

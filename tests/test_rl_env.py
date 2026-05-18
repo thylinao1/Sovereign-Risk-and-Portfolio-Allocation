@@ -129,8 +129,8 @@ def test_default_parameters_match_documented_defaults():
 def test_env_inline_math_matches_yield_model_helpers():
     """Regression guard: env's inline yield / recovery / cost math must equal
     the standalone helpers in src.rl.yield_model. Drift between the two has
-    bitten this repo before (Phase 4 audit caught gdp_pc clamping divergence
-    on the recovery branch)."""
+    bitten this repo before: an earlier review caught gdp_pc clamping divergence
+    on the recovery branch."""
     from src.rl.yield_model import compute_spread, compute_recovery, transaction_cost
 
     df = _make_panel()
@@ -169,7 +169,7 @@ def test_env_inline_math_matches_yield_model_helpers():
     assert abs(env_recovery[0] - expected_recovery) < 1e-6
 
     # --- recovery on a synthetic negative-GDP row should also match (this
-    # specifically guards the Phase 4 clamping fix) ---
+    # specifically guards the clamping fix) ---
     env.macro_data[0, 1, gdp_idx] = -5000.0
     env.defaults[0, 1] = 1
     env_recovery = env._get_recovery_rates(0)
