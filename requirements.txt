@@ -1,0 +1,14 @@
+# Notebook runtime dependencies. Pinned to versions verified to work with the
+# Apple Silicon tensorflow-macos stack used by the original author. Adjust the
+# tensorflow pin to match your platform if necessary.
+numpy>=1.24,<2.0
+pandas>=2.0,<3.0
+scikit-learn>=1.3,<2.0
+scipy>=1.10
+requests>=2.30
+matplotlib>=3.7
+seaborn>=0.12
+xgboost>=1.7,<3.0
+# TensorFlow / Keras for the Two-Tower neural net and the PPO agent.
+# On Apple Silicon, prefer 'tensorflow-macos' + 'tensorflow-metal' instead.
+tensorflow>=2.13,<2.16
