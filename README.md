@@ -1,13 +1,13 @@
 # Sovereign Risk ML
 
-Predicting sovereign defaults and optimizing bond portfolios using machine learning on macroeconomic fundamentals.
+Predicting sovereign defaults and allocating bond portfolios using machine learning on macroeconomic fundamentals.
 
 ## Overview
 
 This project builds an end-to-end pipeline for sovereign credit risk analysis:
 1. **Data Collection**: Automated fetching from World Bank and FRED APIs
 2. **Default Prediction**: Comparison of neural networks vs. traditional ML models
-3. **Portfolio Optimization**: Reinforcement learning for risk-aware bond allocation
+3. **Portfolio Allocation**: Reinforcement learning for risk-aware bond allocation
 
 The analysis covers 117 countries from 1990-2023, with temporal train/test splits to prevent data leakage.
 
@@ -125,7 +125,7 @@ For the full pipeline (including TF-based Two-Tower and PPO):
   "State-level sensitivity check" section). Both static-trained and
   stochastic-trained agents have zero weight variance across years. The gain
   over equal-weight comes from learning to underweight serial defaulters by
-  about 1.4 percentage points, not from temporal risk management.
+  about 1.4 percentage points; temporal risk management plays no part.
 ## Technical Implementation
 
 ### Data Collection
@@ -351,7 +351,7 @@ The agent learned to underweight serial defaulters (Venezuela, Argentina, Ukrain
 - Result: 53.49 total weight difference
 - Interpretation: Agent IS state-dependent at macro level
 
-**Conclusion**: The PPO agent learned to recognize overall state patterns and map them to a relatively fixed allocation, but doesn't perform economic reasoning about individual variables. It's pattern matching, not causal understanding. The improvement is real, but comes from learning historical risk patterns rather than dynamic assessment.
+**Conclusion**: The PPO agent learned to recognize overall state patterns and map them to a relatively fixed allocation, but doesn't perform economic reasoning about individual variables. This is pattern matching rather than causal understanding. The improvement is real, and it traces to learned historical risk patterns; the agent is not assessing risk as conditions change.
 
 ## Limitations
 
